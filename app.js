@@ -3,6 +3,18 @@
 (() => {
   'use strict';
 
+  // ===== SUPABASE CONFIG =====
+  // Replace these with your Supabase project details from https://supabase.com
+  const SUPABASE_URL = 'https://your-project.supabase.co'; // e.g., https://abcdefgh.supabase.co
+  const SUPABASE_ANON_KEY = 'your-anon-key'; // Found in Supabase project settings
+  let supabaseReady = false;
+  let realtimeChannel = null;
+
+  // Check if Supabase is configured
+  function isSupabaseConfigured() {
+    return SUPABASE_URL !== 'https://your-project.supabase.co' && SUPABASE_ANON_KEY !== 'your-anon-key';
+  }
+
   // ===== CONFIG =====
   const STORAGE_KEY = 'fakra_events';
   const TYPE_CONFIG = {
@@ -18,7 +30,7 @@
   const MAX_CELL_EVENTS = 3;
 
   // ===== STATE =====
-  let events = loadEvents();
+  let events = [];
   let currentYear, currentMonth; // 0-indexed month
   let currentView = 'grid'; // 'grid' | 'list'
   let editingEventId = null;
@@ -44,18 +56,126 @@
   const detailBody = $('#detailBody');
 
   // ===== PERSISTENCE =====
-  function loadEvents() {
+  async function loadEvents() {
+    if (isSupabaseConfigured()) {
+      try {
+        const response = await fetch(
+          `${SUPABASE_URL}/rest/v1/fakra_events?select=*`,
+          {
+            headers: {
+              'apikey': SUPABASE_ANON_KEY,
+              'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+              'Content-Type': 'application/json',
+            }
+          }
+        );
+        if (response.ok) {
+          const data = await response.json();
+          return data || [];
+        }
+      } catch (err) {
+        console.warn('Supabase fetch failed, using localStorage:', err);
+      }
+    }
+    
+    // Fallback to localStorage
     try {
       return JSON.parse(localStorage.getItem(STORAGE_KEY)) || [];
     } catch { return []; }
   }
 
-  function saveEvents() {
+  async function saveEvents() {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(events));
+    
+    if (!isSupabaseConfigured()) return;
+    
+    try {
+      // Sync each event to Supabase
+      for (const event of events) {
+        const response = await fetch(
+          `${SUPABASE_URL}/rest/v1/fakra_events`,
+          {
+            method: 'POST',
+            headers: {
+              'apikey': SUPABASE_ANON_KEY,
+              'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+              'Content-Type': 'application/json',
+              'Prefer': 'resolution=merge-duplicates',
+            },
+            body: JSON.stringify(event),
+          }
+        );
+      }
+    } catch (err) {
+      console.warn('Failed to sync to Supabase:', err);
+    }
+  }
+
+  async function deleteFromSupabase(eventId) {
+    if (!isSupabaseConfigured()) return;
+    
+    try {
+      await fetch(
+        `${SUPABASE_URL}/rest/v1/fakra_events?id=eq.${eventId}`,
+        {
+          method: 'DELETE',
+          headers: {
+            'apikey': SUPABASE_ANON_KEY,
+            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+          }
+        }
+      );
+    } catch (err) {
+      console.warn('Failed to delete from Supabase:', err);
+    }
   }
 
   function generateId() {
     return Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+  }
+
+  // ===== INIT SUPABASE REALTIME =====
+  async function initSupabaseRealtime() {
+    if (!isSupabaseConfigured()) return;
+    
+    try {
+      // Simple polling-based sync every 5 seconds when tab is visible
+      document.addEventListener('visibilitychange', () => {
+        if (!document.hidden) syncFromSupabase();
+      });
+      
+      // Initial sync
+      await syncFromSupabase();
+    } catch (err) {
+      console.warn('Failed to init Supabase realtime:', err);
+    }
+  }
+
+  async function syncFromSupabase() {
+    if (!isSupabaseConfigured()) return;
+    
+    try {
+      const response = await fetch(
+        `${SUPABASE_URL}/rest/v1/fakra_events?select=*`,
+        {
+          headers: {
+            'apikey': SUPABASE_ANON_KEY,
+            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`,
+            'Content-Type': 'application/json',
+          }
+        }
+      );
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (JSON.stringify(data) !== JSON.stringify(events)) {
+          events = data || [];
+          renderAll();
+        }
+      }
+    } catch (err) {
+      // Silent fail - just use local events
+    }
   }
 
   // ===== HELPERS =====
@@ -452,9 +572,10 @@
   }
 
   // ===== DELETE EVENT =====
-  function deleteEvent(id) {
+  async function deleteEvent(id) {
     events = events.filter(e => e.id !== id);
-    saveEvents();
+    await saveEvents();
+    await deleteFromSupabase(id);
     closeDetail();
     renderAll();
   }
@@ -525,7 +646,14 @@
   });
 
   // ===== INIT =====
-  renderAll();
+  (async () => {
+    events = await loadEvents();
+    renderAll();
+    await initSupabaseRealtime();
+    
+    // Periodic sync every 10 seconds
+    setInterval(syncFromSupabase, 10000);
+  })();
 
   // Add a CSS animation for shake (injected once)
   const style = document.createElement('style');
