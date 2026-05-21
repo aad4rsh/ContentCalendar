@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="FAKRA Content Calendar — Plan, schedule, and manage your content creation pipeline.">
+  <title>FAKRA — Content Calendar</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<div class="app-container">
+
+  <!-- ===== HEADER ===== -->
+  <header class="app-header">
+    <div class="brand">
+      <div class="brand-logo">F</div>
+      <div class="brand-text">
+        <h1>FAKRA</h1>
+        <span>Content Calendar</span>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn btn-primary" id="btnAddEvent" title="Add new event">
+        <span>＋</span> New Event
+      </button>
+    </div>
+  </header>
+
+  <!-- ===== UPCOMING BANNER ===== -->
+  <section class="upcoming-banner" id="upcomingBanner">
+    <div class="upcoming-banner-label">
+      <span>🔔</span> Upcoming
+    </div>
+    <span class="upcoming-empty">No upcoming events</span>
+  </section>
+
+  <!-- ===== TOOLBAR ===== -->
+  <div class="toolbar">
+    <div class="nav-controls">
+      <button class="btn btn-icon" id="btnPrevMonth" title="Previous month">◀</button>
+      <div class="month-display" id="monthDisplay">May <span>2026</span></div>
+      <button class="btn btn-icon" id="btnNextMonth" title="Next month">▶</button>
+      <button class="btn" id="btnToday" title="Go to today">Today</button>
+    </div>
+    <div class="view-toggle">
+      <button class="btn active" id="btnGridView" title="Calendar grid view">📅 Grid</button>
+      <button class="btn" id="btnListView" title="List view">📋 List</button>
+    </div>
+  </div>
+
+  <!-- ===== CALENDAR GRID VIEW ===== -->
+  <div class="calendar-wrapper" id="calendarWrapper">
+    <div class="calendar-grid" id="calendarGrid">
+      <!-- Rendered by JS -->
+    </div>
+  </div>
+
+  <!-- ===== LIST VIEW ===== -->
+  <div class="list-view" id="listView" style="display:none;">
+    <!-- Rendered by JS -->
+  </div>
+
+</div>
+
+<!-- ===== ADD/EDIT EVENT MODAL ===== -->
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h2 id="modalTitle">New Event</h2>
+      <button class="btn btn-icon" id="btnCloseModal" title="Close">✕</button>
+    </div>
+    <div class="modal-body">
+
+      <div class="form-group">
+        <label for="eventTitle">Title</label>
+        <input type="text" id="eventTitle" placeholder="e.g. Film intro for ep. 12" autocomplete="off">
+      </div>
+
+      <div class="form-group">
+        <label>Type</label>
+        <div class="type-selector" id="typeSelector">
+          <div class="type-option" data-type="shoot">
+            <span class="type-option-emoji">🎥</span>Shoot
+          </div>
+          <div class="type-option" data-type="edit">
+            <span class="type-option-emoji">✂️</span>Edit
+          </div>
+          <div class="type-option" data-type="upload">
+            <span class="type-option-emoji">📤</span>Upload
+          </div>
+          <div class="type-option" data-type="idea">
+            <span class="type-option-emoji">💡</span>Idea
+          </div>
+          <div class="type-option" data-type="promote">
+            <span class="type-option-emoji">📣</span>Promote
+          </div>
+          <div class="type-option" data-type="review">
+            <span class="type-option-emoji">📊</span>Review
+          </div>
+        </div>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label for="eventDate">Date</label>
+          <input type="date" id="eventDate">
+        </div>
+        <div class="form-group">
+          <label for="eventTime">Time</label>
+          <input type="time" id="eventTime">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label for="eventNotes">Notes</label>
+        <textarea id="eventNotes" placeholder="Any extra details..."></textarea>
+      </div>
+
+      <div class="priority-toggle" id="priorityToggle">
+        <span class="priority-toggle-icon">📌</span>
+        <span class="priority-toggle-text">Mark as Priority</span>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn" id="btnCancelModal">Cancel</button>
+      <button class="btn btn-primary" id="btnSaveEvent">Save Event</button>
+    </div>
+  </div>
+</div>
+
+<!-- ===== EVENT DETAIL PANEL ===== -->
+<div class="detail-overlay" id="detailOverlay"></div>
+<div class="detail-panel" id="detailPanel">
+  <div class="detail-header">
+    <h3>Event Details</h3>
+    <button class="btn btn-icon" id="btnCloseDetail" title="Close">✕</button>
+  </div>
+  <div class="detail-body" id="detailBody">
+    <!-- Rendered by JS -->
+  </div>
+  <div class="detail-actions" id="detailActions">
+    <button class="btn" id="btnEditDetail">✏️ Edit</button>
+    <button class="btn btn-danger" id="btnDeleteDetail">🗑️ Delete</button>
+  </div>
+</div>
+
+<script src="app.js"></script>
+</body>
+</html>
