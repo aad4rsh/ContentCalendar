@@ -368,6 +368,18 @@ body {
 
 .cell-event:hover { background: var(--bg-active); color: var(--text); }
 
+.cell-event.completed {
+  background: rgba(34, 197, 94, 0.15);
+  color: #22c55e;
+  text-decoration: line-through;
+  opacity: 0.75;
+}
+
+.cell-event.completed:hover {
+  background: rgba(34, 197, 94, 0.25);
+  color: #22c55e;
+}
+
 .cell-event.pinned::before {
   content: '•';
   color: var(--white);
@@ -459,6 +471,15 @@ body {
 
 .list-event-row:last-child { border-bottom: none; }
 .list-event-row:hover { background: var(--bg-hover); }
+
+.list-event-row.completed {
+  opacity: 0.65;
+}
+
+.list-event-row.completed .list-event-title {
+  text-decoration: line-through;
+  color: var(--text-muted);
+}
 
 .list-event-color {
   width: 3px;

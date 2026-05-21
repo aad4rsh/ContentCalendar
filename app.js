@@ -288,9 +288,9 @@
       const ev = dayEvents[i];
       const cfg = TYPE_CONFIG[ev.type] || TYPE_CONFIG.idea;
       const chip = document.createElement('div');
-      chip.className = `cell-event event-${ev.type}` + (ev.pinned ? ' pinned' : '');
-      chip.innerHTML = `<span class="cell-event-dot" style="background:${cfg.color}"></span>${ev.title}`;
-      chip.title = `${cfg.emoji} ${ev.title}${ev.time ? ' @ ' + formatTime(ev.time) : ''}`;
+      chip.className = `cell-event event-${ev.type}` + (ev.pinned ? ' pinned' : '') + (ev.completed ? ' completed' : '');
+      chip.innerHTML = `<span class="cell-event-dot" style="background:${ev.completed ? '#22c55e' : cfg.color}"></span>${ev.title}`;
+      chip.title = `${cfg.emoji} ${ev.title}${ev.time ? ' @ ' + formatTime(ev.time) : ''}${ev.completed ? ' ✓ Done' : ''}`;
       chip.addEventListener('click', (e) => { e.stopPropagation(); openDetail(ev.id); });
       eventsContainer.appendChild(chip);
     }
@@ -357,9 +357,9 @@
       grouped[dk].forEach(ev => {
         const cfg = TYPE_CONFIG[ev.type] || TYPE_CONFIG.idea;
         const row = document.createElement('div');
-        row.className = 'list-event-row';
+        row.className = 'list-event-row' + (ev.completed ? ' completed' : '');
         row.innerHTML = `
-          <div class="list-event-color" style="background:${cfg.color}"></div>
+          <div class="list-event-color" style="background:${ev.completed ? '#22c55e' : cfg.color}"></div>
           <div class="list-event-info">
             <div class="list-event-title">
               ${ev.pinned ? '📌 ' : ''}${ev.title}
@@ -537,7 +537,7 @@
 
     detailBody.innerHTML = `
       <div class="detail-event-type event-${ev.type}">
-        ${cfg.emoji} ${cfg.label}${ev.pinned ? ' · 📌 Priority' : ''}
+        ${cfg.emoji} ${cfg.label}${ev.pinned ? ' · 📌 Priority' : ''}${ev.completed ? ' · ✅ Done' : ''}
       </div>
       <div class="detail-event-title">${ev.title}</div>
       <div class="detail-row">
@@ -564,6 +564,22 @@
 
     detailPanel.classList.add('open');
     detailOverlay.classList.add('open');
+    
+    // Update detail action buttons
+    const btnDoneDetail = $('#btnDoneDetail');
+    if (btnDoneDetail) {
+      btnDoneDetail.textContent = ev.completed ? '↩️ Mark Incomplete' : '✅ Mark Done';
+      btnDoneDetail.onclick = () => toggleEventComplete(ev.id);
+    }
+  }
+
+  function toggleEventComplete(id) {
+    const ev = events.find(e => e.id === id);
+    if (!ev) return;
+    ev.completed = !ev.completed;
+    saveEvents();
+    renderAll();
+    openDetail(id);
   }
 
   function closeDetail() {
