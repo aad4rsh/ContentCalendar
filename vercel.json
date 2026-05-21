@@ -1,0 +1,5 @@
+{
+  "buildCommand": "node setup.js",
+  "outputDirectory": ".",
+  "installCommand": "echo 'No dependencies to install'"
+}

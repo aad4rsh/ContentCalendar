@@ -1,0 +1,14 @@
+{
+  "name": "fakra-calendar",
+  "version": "1.0.0",
+  "description": "FAKRA Content Calendar - Plan, schedule, and manage your content creation pipeline",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "setup": "node setup.js",
+    "build": "node setup.js"
+  },
+  "keywords": ["calendar", "content", "planning"],
+  "author": "",
+  "license": "MIT"
+}

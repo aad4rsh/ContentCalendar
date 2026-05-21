@@ -2,7 +2,18 @@
 
 Your calendar now syncs events across all browsers and devices! Here's how to set it up:
 
-## Step 1: Create a Supabase Project (Free)
+## Local Development Setup
+
+### Step 1: Copy and Configure .env
+
+1. Copy `.env.example` to `.env`:
+   ```bash
+   cp .env.example .env
+   ```
+
+2. Edit `.env` and add your Supabase credentials (see steps below)
+
+### Step 2: Create a Supabase Project (Free)
 
 1. Go to [supabase.com](https://supabase.com)
 2. Sign up or log in
@@ -12,7 +23,7 @@ Your calendar now syncs events across all browsers and devices! Here's how to se
 6. Select your region
 7. Click **"Create new project"** (wait 2-3 minutes for initialization)
 
-## Step 2: Create the Events Table
+### Step 3: Create the Events Table
 
 Once your project is ready:
 
@@ -43,39 +54,63 @@ CREATE POLICY "Allow public access"
   USING (true);
 ```
 
-## Step 3: Get Your API Credentials
+### Step 4: Get Your API Credentials
 
 1. In Supabase, go to **Settings** → **API**
 2. Copy these two values:
    - **Project URL** (looks like: `https://abcdefgh.supabase.co`)
    - **anon public key** (long string starting with `eyJ...`)
 
-## Step 4: Update Your App
+### Step 5: Update .env
 
-Open `app.js` and find these lines (near the top):
+Open `.env` and fill in your credentials:
 
-```javascript
-const SUPABASE_URL = 'https://your-project.supabase.co';
-const SUPABASE_ANON_KEY = 'your-anon-key';
+```env
+SUPABASE_URL=https://abcdefgh.supabase.co
+SUPABASE_ANON_KEY=eyJ0eXAiOiJKV1QiLCJhbGc...
 ```
 
-Replace them with your credentials:
+### Step 6: Generate config.js
 
-```javascript
-const SUPABASE_URL = 'https://abcdefgh.supabase.co';  // Your Project URL
-const SUPABASE_ANON_KEY = 'eyJ0eXAi...';  // Your anon public key
+Run the setup script to generate `config.js` from your `.env`:
+
+```bash
+node setup.js
 ```
 
-## Step 5: Deploy to Vercel
+You should see: ✅ `config.js generated from .env`
 
-1. Commit and push your changes:
+## Deployment to Vercel
+
+### Step 1: Add Environment Variables to Vercel
+
+1. Go to your Vercel project dashboard
+2. Click **Settings** → **Environment Variables**
+3. Add these variables:
+   - **Key**: `SUPABASE_URL` → **Value**: Your Supabase URL
+   - **Key**: `SUPABASE_ANON_KEY` → **Value**: Your Supabase key
+
+### Step 2: Add Build Script to Vercel
+
+1. Go to **Settings** → **Build & Development Settings**
+2. In **Build Command**, add:
    ```bash
-   git add .
-   git commit -m "Add cross-browser event sync"
-   git push origin main
+   node setup.js
    ```
+3. This ensures `config.js` is generated from environment variables during each deploy
 
-2. Vercel will auto-deploy your changes
+### Step 3: Deploy
+
+```bash
+git add -A
+git commit -m "feat: env-based config"
+git push origin main
+```
+
+Vercel will automatically:
+1. Use your environment variables
+2. Run `node setup.js` to generate `config.js`
+3. Deploy the app
 
 ## ✅ Done!
 
@@ -83,17 +118,28 @@ Now when you add an event:
 - It saves to Supabase
 - All other browsers/tabs sync within 10 seconds
 - Events persist across refreshes
-- Share the calendar link with others to see all events
+- Secure - credentials aren't exposed in code
+
+## 🔒 Security Notes
+
+- ✅ `.env` is in `.gitignore` - never committed
+- ✅ `config.js` is in `.gitignore` - generated per environment
+- ✅ On Vercel, credentials come from environment variables, not git
+- ✅ Only the public API key is used (safe for frontend)
 
 ## 🔧 Troubleshooting
 
+**"config.js not generated?"**
+- Make sure `.env` file exists and is filled in
+- Run `node setup.js` in the project directory
+- Check that both `SUPABASE_URL` and `SUPABASE_ANON_KEY` are set
+
 **"Events not syncing?"**
-- Check your SUPABASE_URL and SUPABASE_ANON_KEY are correct
-- Open browser DevTools (F12) → Console to see any errors
+- Check your `config.js` has correct credentials
+- Open browser DevTools (F12) → Console to see errors
 - Make sure RLS policies are set correctly in Supabase
 
-**"Getting CORS errors?"**
-- This shouldn't happen with Supabase's CORS setup, but if it does, Supabase likely just needs a minute to propagate
+**"Vercel build failing?"**
+- Ensure `SUPABASE_URL` and `SUPABASE_ANON_KEY` are set in Vercel dashboard
+- Check **Deployments** → **Build Logs** for `setup.js` errors
 
-**"Want to make it invite-only?"**
-- Change the RLS policy in Supabase to require authentication instead of allowing all access

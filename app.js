@@ -4,9 +4,10 @@
   'use strict';
 
   // ===== SUPABASE CONFIG =====
-  // Replace these with your Supabase project details from https://supabase.com
-  const SUPABASE_URL = 'https://your-project.supabase.co'; // e.g., https://abcdefgh.supabase.co
-  const SUPABASE_ANON_KEY = 'your-anon-key'; // Found in Supabase project settings
+  // Loaded from config.js - DO NOT EDIT HERE
+  // To update: edit .env file and run: node setup.js
+  const SUPABASE_URL = window.CONFIG?.SUPABASE_URL || 'https://your-project.supabase.co';
+  const SUPABASE_ANON_KEY = window.CONFIG?.SUPABASE_ANON_KEY || 'your-anon-key';
   let supabaseReady = false;
   let realtimeChannel = null;
 
